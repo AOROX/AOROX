@@ -23,7 +23,7 @@ namespace MinigamesDiscordBot.CommandModules
 
             EmbedFieldBuilder DemonMobsCommandField = new EmbedFieldBuilder();
             DemonMobsField.Name = "Demon Flash Mobs Commands";
-            DemonMobsCommandField.Value = "`-d <world> <prefix> <suffix> <location number>`\n`-d <world>`\n`-clearmobs`";
+            DemonMobsCommandField.Value = "`-d <world> <prefix> <suffix> <location number>`\n`-dr <world>`\n`-clearmobs`";
             DemonMobsCommandField.WithIsInline(true);
             EmbedFieldBuilder DemonMobsDescriptionField = new EmbedFieldBuilder();
             DemonMobsDescriptionField.Name = "Description";
@@ -59,7 +59,7 @@ NOTE: All wilderness locations are underlined! Enter at your own risk!\n";
             }
             if (roleFound)
             {
-                await ReplyAsync(_mobs.AddWorld(username, world, skill));
+                await ReplyAsync(_mobs.AddWorld(prefix, suffix, world, location));
                                 switch (location)
                                 
                 {
@@ -97,16 +97,16 @@ NOTE: All wilderness locations are underlined! Enter at your own risk!\n";
                         location = "11 - West of the Digsite, south of the crashed gnome glider";
                         break;
                     case "12":
-                        location = "12 - West of Daemonheim";
+                        location = "12 - West of Daemonheim (Wilderness 16)";
                         break;
                     case "13":
-                        location = "13 - Ruins (Wilderness 25-28)";
+                        location = "13 - Ruins (Wilderness 26)";
                         break;
                     case "14":
-                        location = "14 - South-west of Dark Warriors Fortress";
+                        location = "14 - South-west of Dark Warriors Fortress (Wilderness 7)";
                         break;
                     case "15":
-                        location = "15 - West of the Boneyard (Wilderness 19-23)";
+                        location = "15 - West of the Boneyard (Wilderness 21)";
                         break;
                     case "16":
                         location = "16 - East of the Chaos Temple (Wilderness 11)";
@@ -120,3 +120,79 @@ NOTE: All wilderness locations are underlined! Enter at your own risk!\n";
             }
                 
         }
+
+        [Command("dr")]
+        public async Task RemoveWorld(int worldNum)
+        {
+            //getting the user on the server to see their roles
+            SocketGuild s = _client.GetGuild(Config.SERVER_ID_MINIGAMES);
+            SocketGuildUser u = s.GetUser(Context.User.Id);
+
+            bool roleFound = false; //to output correct message
+
+            //loopsing through roles to see if they have the correct one
+            foreach (SocketRole role in u.Roles)
+            {
+                if (role.Name == "Guest" || role.Name == "Admin" || role.Name == "Discord Helper" || role.Name == "'Demon Mobs FC' Ranks" || s.Owner.Id == Context.User.Id)
+                {
+                    roleFound = true;
+                }
+            }
+            if (roleFound)
+            {
+                await ReplyAsync(_mobs.RemoveWorld(worldNum));
+                await UpdateTextChannel("[" + Context.User.ToString() + "] " +  " removed world " + worldNum);
+            }
+            else
+            {
+                await ReplyAsync("You do not have permission to use this!");
+            }
+        }
+        
+        [Command("ClearMobs")]
+        public async Task ClearScouts()
+        {
+            //getting the user on the server to see their roles
+            SocketGuild s = _client.GetGuild(Config.SERVER_ID_MINIGAMES);
+            SocketGuildUser u = s.GetUser(Context.User.Id);
+
+            bool roleFound = false; //to output correct message
+
+            //loopsing through roles to see if they have the correct one
+            foreach (SocketRole role in u.Roles)
+            {
+                if (role.Name == "Admin"  || role.Name == "Discord Helper" || role.Name == "'Demon Mobs FC' Ranks" || s.Owner.Id == Context.User.Id)
+                {
+                    roleFound = true;
+                }
+            }
+            if (roleFound)
+            {
+                await ReplyAsync(_mobs.ClearInfo());
+                await UpdateTextChannel("[" + Context.User.ToString() + "] - " + " Imformation cleared.");
+            }
+            else
+            {
+                await ReplyAsync("You do not have permission to use this!");
+            }           
+        }
+        
+        
+        private async Task UpdateTextChannel(string message)
+        {
+            SocketGuild guild = _client.GetGuild(Config.SERVER_ID_MINIGAMES);//loads server info
+            SocketTextChannel channel = guild.GetTextChannel(Config.MINIGAMES_DEMONMOBS_CHANNEL); //loads channel info
+
+            //delete any and all previous messages
+            var messages = await channel.GetMessagesAsync(100).Flatten();
+            List<IMessage> list = messages.ToList<IMessage>();
+            list.RemoveAt(list.Count - 1);
+            await channel.DeleteMessagesAsync(list);
+
+            //give output
+            //await channel.SendMessageAsync("", false, eb1);
+            await channel.SendMessageAsync(_mobs.GetOutput());
+            await log.SendMessageAsync(message);
+        }
+    }
+}
