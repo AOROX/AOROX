@@ -1,0 +1,122 @@
+using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
+using MinigameDiscordBot.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace MinigamesDiscordBot.CommandModules
+{
+    class DemonMobsModule : ModuleBase
+    {
+        DemonMobs _mobs;
+        DiscordSocketClient _client;
+        EmbedBuilder eb1 = new EmbedBuilder();
+
+
+        public DemonMobsModule(GeobieBands bands, DiscordSocketClient client)
+         {
+            _mobs = mobs;
+            _client = client;
+
+            EmbedFieldBuilder DemonMobsCommandField = new EmbedFieldBuilder();
+            DemonMobsField.Name = "Demon Flash Mobs Commands";
+            DemonMobsCommandField.Value = "`-d <world> <prefix> <suffix> <location number>`\n`-d <world>`\n`-clearmobs`";
+            DemonMobsCommandField.WithIsInline(true);
+            EmbedFieldBuilder DemonMobsDescriptionField = new EmbedFieldBuilder();
+            DemonMobsDescriptionField.Name = "Description";
+            DemonMobsDescriptionField.IsInline = true;
+            DemonMobsDescriptionField.Value = "Adds or edits a world\nRemoves a world from the list\nClears the list";
+            EmbedFieldBuilder titles = new EmbedFieldBuilder();
+            title.Name = "Title Information";
+            title.Value = "Prefix titles: General, Executioner, Castellan, Deacon\n" +
+                "Suffix titles: Blazing, Corrupting, Frostborn, Glorious, Infernal, Obscured, Pestilent, Rending, Shattering, Terrifying\n" +
+NOTE: All wilderness locations are underlined! Enter at your own risk!\n";
+
+
+            eb1.AddField(DemonMobsCommandField);
+            eb1.AddField(DemonMobsDescriptionField);
+            eb1.AddField(worlds);
+        }
+         [Command("d")]
+        public async Task Scout(int world, string prefix, string suffix, [Remainder]string location number)
+        {
+            //getting the user on the server to see their roles
+            SocketGuild s = _client.GetGuild(Config.SERVER_ID_MINIGAMES);
+            SocketGuildUser u = s.GetUser(Context.User.Id);
+
+            bool roleFound = false; //to output correct message
+
+            //loopsing through roles to see if they have the correct one
+            foreach (SocketRole role in u.Roles)
+            {
+               if (role.Name == "Guest" || s.Owner.Id == Context.User.Id)
+                {
+                    roleFound = true;
+                }
+            }
+            if (roleFound)
+            {
+                await ReplyAsync(_mobs.AddWorld(username, world, skill));
+                                switch (location)
+                                
+                {
+                    case "1":
+                        location = "1 - North of West Ardougne";
+                        break;
+                    case "2":
+                        location = "2 - North of the Poison Waste";
+                        break;
+                    case "3":
+                        location = "3 - South of Gu'Tanoth";
+                        break;
+                    case "4":
+                        location = "4 - South of Seers";
+                        break;
+                    case "5":
+                        location = "5 - South-east of the Edgeville Monastery";
+                        break;
+                    case "6":
+                        location = "6 - North of Menaphos";
+                        break;
+                    case "7":
+                        location = "7 - North-west of Menaphos";
+                        break;
+                    case "8":
+                        location = "8 - West of the Ruins of Uzer";
+                        break;
+                    case "9":
+                        location = "9 - South-west of Port Phasmatys";
+                        break;
+                    case "10":
+                        location = "10 - North-west of Duel Arena";
+                        break;
+                    case "11":
+                        location = "11 - West of the Digsite, south of the crashed gnome glider";
+                        break;
+                    case "12":
+                        location = "12 - West of Daemonheim";
+                        break;
+                    case "13":
+                        location = "13 - Ruins (Wilderness 25-28)";
+                        break;
+                    case "14":
+                        location = "14 - South-west of Dark Warriors Fortress";
+                        break;
+                    case "15":
+                        location = "15 - West of the Boneyard (Wilderness 19-23)";
+                        break;
+                    case "16":
+                        location = "16 - East of the Chaos Temple (Wilderness 11)";
+                        break;
+                }
+                await UpdateTextChannel("[" + Context.User.ToString() + "] - "+ username + " scouted world as " + skill + ": " + world);
+            }
+            else
+            {
+                await ReplyAsync("You do not have permission to use this!");
+            }
+                
+        }
